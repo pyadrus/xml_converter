@@ -6,10 +6,10 @@ with open("input.xml", "r", encoding="utf-8") as f:
 
 soup = BeautifulSoup(xml_content, "xml")
 
-# Find all offer elements
+# Найти все элементы предложения
 offers = soup.find_all("offer")
 
-# Create a list to store the extracted data
+# Создайте список для хранения извлеченных данных.
 offer_data_list = []
 
 for offer in offers:
@@ -18,23 +18,46 @@ for offer in offers:
         "available": offer["available"],
     }
 
-    # Extract child elements of offer
+    # Извлечение дочерних элементов предложения
     for child in offer.children:
-        if child.name is not None:  # Skip NavigableString (like whitespace)
+        if child.name is not None:  # Пропустить NavigableString (например, пробелы)
             if child.name == "param":
                 offer_data[child["name"]] = child.text
             else:
                 offer_data[child.name] = child.text
 
-    # Add the extracted data to the list
+    # Добавляем полученные данные в список
     offer_data_list.append(offer_data)
 
-# Get all unique keys
+# Получаем все уникальные ключи
 all_keys = set().union(*(d.keys() for d in offer_data_list))
 
-# Write data to CSV file
+# Запись данных в CSV-файл
 with open("output.csv", "w", newline="", encoding="utf-8") as csvfile:
-    writer = csv.DictWriter(csvfile, fieldnames=all_keys)
-    writer.writeheader()
-    for offer_data in offer_data_list:
-        writer.writerow(offer_data)
+    writer = csv.DictWriter(csvfile,  # Записываем в файл
+                            fieldnames=all_keys,  # Записываем все ключи
+                            delimiter=';'  # Разделитель точка и запятая
+                            )
+    writer.writeheader()  # Записываем заголовок
+    for offer_data in offer_data_list:  # Записываем данные
+        writer.writerow(offer_data)  # Записываем данные
+
+
+
+# Функция для удаления HTML-тегов из текста
+def remove_html_tags(text):
+    import re
+    clean = re.compile('<.*?>')
+    return re.sub(clean, '', text)
+
+
+# Открываем файлы для чтения и записи
+with open("output.csv", "r", encoding="utf-8") as infile:
+    with open("output_clean.csv", "w", newline="", encoding="utf-8") as outfile:
+        reader = csv.reader(infile, delimiter=";")
+        writer = csv.writer(outfile, delimiter=";")
+
+        # Обрабатываем каждую строку в файле
+        for row in reader:
+            cleaned_row = [remove_html_tags(cell) if isinstance(cell, str) else cell for cell in row]
+            writer.writerow(cleaned_row)
