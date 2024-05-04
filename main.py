@@ -43,7 +43,6 @@ with open("output.csv", "w", newline="", encoding="utf-8") as csvfile:
         writer.writerow(offer_data)  # Записываем данные
 
 
-
 # Функция для удаления HTML-тегов из текста
 def remove_html_tags(text):
     import re
